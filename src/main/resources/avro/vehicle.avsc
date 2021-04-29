@@ -1,0 +1,11 @@
+{
+  "namespace" : "com.example",
+  "type" : "record",
+  "name" : "Vehicle",
+  "fields" : [
+    {"name":"year", "type":"int"},
+    {"name":"make", "type":"string"},
+    {"name":"model", "type":"string"},
+    {"name":"mileage", "type":"int", "default":0}
+  ]
+}

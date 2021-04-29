@@ -1,0 +1,93 @@
+spring:
+  main:
+    allow-bean-definition-overriding: true
+  cloud:
+    stream:
+      bindings:
+        basicString-in-0:
+          destination: string-in
+          group: string-in
+        person-in-0:
+          destination: person-in
+          group: person-in
+          content-type: application/json
+        batch-in-0:
+          destination: batch-in
+          group: batch-in
+          consumer:
+            batch-mode: true
+        risk-in-0:
+          destination: risk-in
+          content-type: application/json
+        notAPerson-in-0:
+          destination: notAPerson-in
+          group: notAPerson-in
+          content-type: application/json
+        deadLetter-in-0:
+          destination: deadLetter-in
+          group: deadLetter-in
+        vehicle-in-0:
+          destination: vehicle-in
+          consumer:
+            use-native-decoding: true
+        vehicleSupplier-out-0:
+          destination: vehicle-in
+          producer:
+            use-native-encoding: true
+        partition-in-0:
+          destination: partition-in
+          group: partition-in
+        generatePartition-out-0:
+          destination: partition-in
+          producer:
+            partition-key-expression: headers['partitionKey']
+            partition-count: 4
+      function:
+        definition: basicString;person;batch;risk;notAPerson;deadLetter;vehicle;vehicleSupplier;partition;generatePartition
+      kafka:
+        binder:
+          auto-add-partitions: true
+          auto-create-topics: true
+          brokers: ${kafka.config.uri}
+          min-partition-count: 4
+          replication-factor: 1
+          configuration:
+            schema.registry.url: http://schema-registry:38081
+        bindings:
+          notAPerson-in-0:
+            consumer:
+              max-attempts: 1
+              enable-dql: true
+              dlq-name: deadLetter-in
+              auto-commit-on-error: true
+              auto-commit-offset: true
+          vehicle-in-0:
+            consumer:
+              configuration:
+                value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+                schema.registry.url: ${spring.cloud.stream.kafka.binder.configuration.schema.registry.url}
+                specific.avro.reader: true
+          vehicleSupplier-out-0:
+            producer:
+              configuration:
+                value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+                schema.registry.url: ${spring.cloud.stream.kafka.binder.configuration.schema.registry.url}
+      default-binder: kafka
+  kafka:
+    producer:
+#      acks: all
+      bootstrap-servers: ${kafka.config.uri}
+    consumer:
+      auto-offset-reset: earliest
+      bootstrap-servers: ${kafka.config.uri}
+
+kafka:
+  config:
+    uri: kafka:29092
+    log-path: /tmp/logs.txt
+logging:
+  level:
+    org:
+      springframework: WARN
+      apache.kafka: WARN
+    io.confluent: WARN

@@ -1,0 +1,92 @@
+version: "3.1"
+
+services:
+  zk-ui:
+    image: tobilg/zookeeper-webui
+    ports:
+    - "7080:7080"
+    environment:
+      ZK_DEFAULT_NODE: zookeeper:2181
+      HTTP_PORT: 7080
+    links:
+      - zookeeper
+
+  zookeeper:
+    image: zookeeper
+    container_name: zookeeper
+    restart: always
+    ports:
+      - "2181:2181"
+      - "2888:2888"
+      - "3888:3888"
+      - "9090:9090"
+    environment:
+      ZOO_INIT_LIMIT: 20
+      ZOO_CFG_EXTRA: "admin.serverPort=9090"
+
+  debian:
+    image: debian/default-jre
+    tty: true
+    volumes:
+      - ./target:/target
+
+  kafka-zookeeper:
+    image: confluentinc/cp-zookeeper:4.1.1
+    hostname: kafka-zookeeper
+    ports:
+      - "32181:32181"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 32181
+      ZOOKEEPER_TICK_TIME: 2000
+      ZOOKEEPER_SYNC_LIMIT: 2
+
+  kafka:
+    image: confluentinc/cp-kafka:4.1.1
+    hostname: kafka
+    ports:
+      - "29092:29092"
+    depends_on:
+      - kafka-zookeeper
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: kafka-zookeeper:32181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:29092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+
+  schema-registry:
+    image: confluentinc/cp-schema-registry:4.1.1
+    hostname: schema-registry
+    ports:
+      - "38081:38081"
+    depends_on:
+      - kafka
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_CONNECTION_URL: kafka-zookeeper:32181
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LISTENERS: http://schema-registry:38081
+      SCHEMA_REGISTRY_DEBUG: "true"
+
+  kafka-rest:
+    image: confluentinc/cp-kafka-rest:4.1.1
+    hostname: kafka-rest
+    ports:
+      - "38082:38082"
+    depends_on:
+      - schema-registry
+    environment:
+      KAFKA_REST_ZOOKEEPER_CONNECT: kafka-zookeeper:32181
+      KAFKA_REST_SCHEMA_REGISTRY_URL: schema-registry:38081
+      KAFKA_REST_HOST_NAME: kafka-rest
+      KAFKA_REST_LISTENERS: http://kafka-rest:38082
+
+  topics-ui:
+    image: landoop/kafka-topics-ui:0.9.4
+    hostname: topics-ui
+    ports:
+      - "8010:8010"
+    depends_on:
+      - kafka-rest
+    environment:
+      KAFKA_REST_PROXY_URL: http://kafka-rest:38082/
+      PROXY: "true"
+      PORT: 8010
