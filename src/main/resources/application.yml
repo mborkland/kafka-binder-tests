@@ -75,7 +75,6 @@ spring:
       default-binder: kafka
   kafka:
     producer:
-#      acks: all
       bootstrap-servers: ${kafka.config.uri}
     consumer:
       auto-offset-reset: earliest

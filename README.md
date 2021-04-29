@@ -10,11 +10,11 @@ $ mvn clean package
 ```
 Initialize the testing environment:
 ```
-docker-compose up -d
+$ docker-compose up -d
 ```
-Enter the Linux Docker container (if using Git for Windows, prepend with `winpty`:
+Enter the Linux Docker container (if using Git for Windows, prepend with `winpty`):
 ```
-docker exec -it kafka-binder-tests_debian_1 bash
+$ docker exec -it kafka-binder-tests_debian_1 bash
 ```
 In the container, execute the JAR:
 ```
