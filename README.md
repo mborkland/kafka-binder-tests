@@ -26,4 +26,7 @@ root@6e88f2084bff:/# cat /tmp/logs.txt
 ```
 
 ## Issues
-The `topicHasWrongObjectTypeRiskTest` test issues a false negative because it is unable to programmatically detect that an expected exception is thrown. I tried overriding different `MessageConverter` beans to set a flag in the `TestContext`, but I couldn't get it to work without breaking the other tests. Please feel free to submit a PR with any fixes or enhancements.
+* The `topicHasWrongObjectTypeRiskTest` test issues a false negative because it is unable to programmatically detect that an expected exception is thrown. I tried overriding different `MessageConverter` beans to set a flag in the `TestContext`, but I couldn't get it to work without breaking the other tests.
+* I could not get the configuration right for the dead letter queue. All of the examples online still use the deprecated imperative method instead of the functional method that is now preferred.
+
+Please feel free to submit a PR with any fixes or enhancements.
